@@ -30,16 +30,34 @@ app.get("/articles", (req, res) => {
   res.json(articles);
 });
 
-
 app.get("/articles/:id", (req, res) => {
-  const filePath = path.join(DATA_DIR, `${req.params.id}.json`);
+  const { id } = req.params;
+  const filePath = path.join(DATA_DIR, `${id}.json`);
+
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: "Article not found" });
   }
-  const article = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  res.json(article);
+
+  const content = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  res.json(content);
 });
 
+app.put("/articles/:id", (req, res) => {
+  const { id } = req.params;
+  const { title, content } = req.body;
+  const filePath = path.join(DATA_DIR, `${id}.json`);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: "Article not found" });
+  }
+  if (!title || !content) {
+    return res.status(400).json({ error: "Title and content required" });
+  }
+
+  const updated = { id, title, content };
+  fs.writeFileSync(filePath, JSON.stringify(updated, null, 2));
+  res.json({ message: "Article updated", article: updated });
+});
 
 app.post("/articles", (req, res) => {
   const { title, content } = req.body;
@@ -51,6 +69,18 @@ app.post("/articles", (req, res) => {
   const filePath = path.join(DATA_DIR, `${id}.json`);
   fs.writeFileSync(filePath, JSON.stringify({ id, title, content }, null, 2));
   res.status(201).json({ message: "Article saved", id });
+});
+
+app.delete("/articles/:id", (req, res) => {
+  const { id } = req.params;
+  const filePath = path.join(DATA_DIR, `${id}.json`);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: "Article not found" });
+  }
+
+  fs.unlinkSync(filePath);
+  res.json({ message: "Article deleted" });
 });
 
 app.listen(PORT, () => {
