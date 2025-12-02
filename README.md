@@ -29,3 +29,11 @@ cd frontend
 npm install
 npm start
 Приложение откроется в браузере по адресу: http://localhost:3000
+
+## Запуск миграций
+1. Создать базу данных (см. шаг ниже).
+2. Выполнить:
+   ```bash
+   npx sequelize-cli db:migrate
+3. Для отката:
+npx sequelize-cli db:migrate:undo
