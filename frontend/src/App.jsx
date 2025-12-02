@@ -141,22 +141,19 @@ function App() {
           <h2>{selectedArticle.title}</h2>
           <div dangerouslySetInnerHTML={{ __html: selectedArticle.content }}></div>
 
-          {selectedArticle.attachments?.length > 0 && (
-            <>
-              <h3>Attachments:</h3>
-              {selectedArticle.attachments.map((file, idx) => (
-                <div key={idx}>
-                  {file.endsWith(".pdf") ? (
-                    <a href={`http://localhost:5000${file}`} target="_blank" rel="noreferrer">
-                      View PDF
-                    </a>
-                  ) : (
-                    <img src={`http://localhost:5000${file}`} alt="attachment" width="200" />
-                  )}
-                </div>
-              ))}
-            </>
-          )}
+          {selectedArticle.attachment && (
+  <>
+    <h3>Attachment:</h3>
+    {selectedArticle.attachment.endsWith(".pdf") ? (
+      <a href={`http://localhost:5000${selectedArticle.attachment}`} target="_blank" rel="noreferrer">
+        View PDF
+      </a>
+    ) : (
+      <img src={`http://localhost:5000${selectedArticle.attachment}`} alt="attachment" width="200" />
+    )}
+  </>
+)}
+
         </>
       )}
 

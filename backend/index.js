@@ -1,18 +1,15 @@
-import express from "express";
-import fs from "fs";
-import path from "path";
-import multer from "multer";
-import cors from "cors";
-import { fileURLToPath } from "url";
-import { WebSocketServer } from "ws";
-import db from "./models/index.cjs";
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
+const cors = require("cors");
+const { WebSocketServer } = require("ws");
+const db = require("./models");
 
 db.sequelize.authenticate()
   .then(() => console.log("Database connected"))
   .catch(err => console.error("DB error:", err));
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 5000;
 
@@ -50,7 +47,6 @@ app.get("/articles/:id", async (req, res) => {
   res.json(article);
 });
 
-
 app.post("/articles", upload.single("attachment"), async (req, res) => {
   const attachmentPath = req.file ? "/uploads/" + req.file.filename : null;
 
@@ -62,7 +58,6 @@ app.post("/articles", upload.single("attachment"), async (req, res) => {
 
   res.json(article);
 });
-
 
 app.put("/articles/:id", upload.single("attachment"), async (req, res) => {
   const article = await db.Article.findByPk(req.params.id);
@@ -79,7 +74,6 @@ app.put("/articles/:id", upload.single("attachment"), async (req, res) => {
   res.json(article);
 });
 
-
 app.delete("/articles/:id", async (req, res) => {
   const article = await db.Article.findByPk(req.params.id);
   if (!article) return res.status(404).json({ error: "Not found" });
@@ -87,7 +81,6 @@ app.delete("/articles/:id", async (req, res) => {
   await article.destroy();
   res.json({ success: true });
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
