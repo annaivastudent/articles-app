@@ -11,16 +11,29 @@ function ArticleList() {
       .catch(err => console.error(err));
   }, []);
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this article?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/articles/${id}`);
+      setArticles(articles.filter(a => a.id !== id));
+    } catch (err) {
+      alert("Error deleting article");
+    }
+  };
+
   return (
     <div>
-      <h2>All Articles</h2>
+      <Link to="/create"><button>Create New Article</button></Link>
       {articles.length === 0 ? (
         <p>No articles yet.</p>
       ) : (
         <ul>
           {articles.map(a => (
             <li key={a.id}>
-              <Link to={`/article/${a.id}`}>{a.title}</Link>
+              {a.title}{" "}
+              <Link to={`/article/${a.id}`}><button>View</button></Link>
+              <Link to={`/edit/${a.id}`}><button>Edit</button></Link>
+              <button onClick={() => handleDelete(a.id)}>Delete</button>
             </li>
           ))}
         </ul>

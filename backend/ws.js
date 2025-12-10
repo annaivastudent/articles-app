@@ -8,8 +8,6 @@ wss.on("connection", (ws) => {
   ws.on("error", (err) => console.error("WS Error:", err));
 });
 
-console.log("WebSocket running on ws://localhost:5001");
-
 function broadcast(message) {
   wss.clients.forEach(client => {
     if (client.readyState === 1) {
