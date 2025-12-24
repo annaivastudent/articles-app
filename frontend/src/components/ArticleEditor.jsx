@@ -7,6 +7,7 @@ import "react-quill/dist/quill.snow.css";
 function ArticleEditor({ mode }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -16,22 +17,36 @@ function ArticleEditor({ mode }) {
   const [workspaceId, setWorkspaceId] = useState("");
 
   useEffect(() => {
-    // Загружаем статью для редактирования
     if (mode === "edit" && id) {
-      axios.get(`http://localhost:5000/articles/${id}`)
+      axios
+        .get(`http://localhost:5000/articles/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
         .then(res => {
           setTitle(res.data.title);
           setContent(res.data.content);
           setWorkspaceId(res.data.workspaceId || "");
         })
-        .catch(err => alert("Error loading article"));
+        .catch(err => {
+          if (err.response?.status === 401) {
+            localStorage.removeItem("token");
+            navigate("/login");
+          }
+        });
     }
 
-    // Загружаем список workspaces
-    axios.get("http://localhost:5000/workspaces")
+    axios
+      .get("http://localhost:5000/workspaces", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then(res => setWorkspaces(res.data))
-      .catch(err => console.error("Error fetching workspaces:", err));
-  }, [mode, id]);
+      .catch(err => {
+        if (err.response?.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+      });
+  }, [mode, id, navigate, token]);
 
   const handleSubmit = async () => {
     if (!title || !content) return alert("Title and content required!");
@@ -45,16 +60,28 @@ function ArticleEditor({ mode }) {
     try {
       if (mode === "create") {
         await axios.post("http://localhost:5000/articles", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         });
       } else {
         await axios.put(`http://localhost:5000/articles/${id}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         });
       }
+
       navigate("/");
-    } catch {
-      alert("Error saving article");
+    } catch (err) {
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/login");
+      } else {
+        alert("Error saving article");
+      }
     }
   };
 
@@ -80,7 +107,6 @@ function ArticleEditor({ mode }) {
         style={{ marginTop: "10px" }}
       />
 
-      {/* Выпадающий список Workspaces */}
       <select
         value={workspaceId}
         onChange={(e) => setWorkspaceId(e.target.value)}

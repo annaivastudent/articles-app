@@ -29,11 +29,11 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ storage, fileFilter });
 
-// Получить все статьи (только корневые)
+// Получить все статьи
 router.get("/", async (req, res) => {
   try {
     const articles = await Article.findAll({
-      where: { articleId: null }, // только оригиналы
+      where: { articleId: null },
       order: [["createdAt", "DESC"]],
     });
     res.json(articles);
@@ -52,7 +52,7 @@ router.get("/:id", async (req, res) => {
     if (!article) {
       article = await ArticleVersion.findOne({
         where: { articleId: id },
-        order: [["version", "DESC"]]
+        order: [["version", "DESC"]],
       });
       if (!article) return res.status(404).json({ error: "Not found" });
     }
@@ -63,7 +63,6 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch article" });
   }
 });
-
 
 // Создать статью
 router.post("/", upload.single("attachment"), async (req, res) => {
@@ -81,46 +80,32 @@ router.post("/", upload.single("attachment"), async (req, res) => {
   }
 });
 
-// Создать новую версию статьи
+//  Создание версии
 router.put("/:id", upload.single("attachment"), async (req, res) => {
   try {
     const original = await Article.findByPk(req.params.id);
+    if (!original) return res.status(404).json({ error: "Original article not found" });
 
-    if (original) {
-      // Обновляем оригинальную статью
-      const updated = await original.update({
-        title: req.body.title || original.title,
-        content: req.body.content || original.content,
-        attachment: req.file ? "/uploads/" + req.file.filename : original.attachment,
-        workspaceId: req.body.workspaceId || original.workspaceId,
-      });
-      return res.json(updated);
-    }
-
-    // Если оригинала нет — создаём новую версию
-    const prev = await ArticleVersion.findOne({
-      where: { articleId: req.params.id },
-      order: [["version", "DESC"]],
+    const latestVersion = await ArticleVersion.max("version", {
+      where: { articleId: original.id },
     });
-    if (!prev) return res.status(404).json({ error: "Not found" });
 
     const newVersion = await ArticleVersion.create({
-      articleId: prev.articleId,
-      version: prev.version + 1,
-      title: req.body.title || prev.title,
-      content: req.body.content || prev.content,
-      attachment: req.file ? "/uploads/" + req.file.filename : prev.attachment,
+      articleId: original.id,
+      version: (latestVersion || 0) + 1,
+      title: req.body.title || original.title,
+      content: req.body.content || original.content,
+      attachment: req.file ? "/uploads/" + req.file.filename : original.attachment,
     });
 
     res.status(201).json(newVersion);
   } catch (err) {
-    console.error("Ошибка при сохранении статьи:", err);
-    res.status(500).json({ error: "Failed to save article" });
+    console.error("Ошибка при создании версии:", err);
+    res.status(500).json({ error: "Failed to create article version" });
   }
 });
 
-
-// Получить все версии статьи
+// Получить все версии
 router.get("/:id/versions", async (req, res) => {
   try {
     const versions = await ArticleVersion.findAll({

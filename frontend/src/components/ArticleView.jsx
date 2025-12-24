@@ -5,29 +5,46 @@ import axios from "axios";
 function ArticleView() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
   const [article, setArticle] = useState(null);
   const [versions, setVersions] = useState([]);
   const [currentVersion, setCurrentVersion] = useState(null);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/articles/${id}`)
+    axios
+      .get(`http://localhost:5000/articles/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then(res => {
         setArticle(res.data);
         setCurrentVersion(res.data.version || 0);
       })
-      .catch(err => console.error("Ошибка загрузки статьи:", err));
-  }, [id]);
+      .catch(err => {
+        if (err.response?.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+      });
+  }, [id, navigate, token]);
 
   const loadVersions = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/articles/${id}/versions`);
+      const res = await axios.get(
+        `http://localhost:5000/articles/${id}/versions`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setVersions(res.data);
     } catch (err) {
-      console.error("Ошибка загрузки версий:", err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
     }
   };
 
-  const isLatestVersion = currentVersion === Math.max(0, ...versions.map(v => v.version));
+  const isLatestVersion =
+    currentVersion === Math.max(0, ...versions.map(v => v.version));
 
   return (
     <div>
@@ -36,7 +53,6 @@ function ArticleView() {
           <h2>{article.title}</h2>
           <p>{article.content.replace(/<[^>]+>/g, "")}</p>
 
-          {/* Отображение картинки */}
           {article.attachment && (
             <img
               src={`http://localhost:5000${article.attachment}`}
@@ -49,16 +65,16 @@ function ArticleView() {
             Текущая версия: {currentVersion || "оригинал"}
           </p>
 
-          {/* Баннер для старых версий */}
           {!isLatestVersion && (
             <div style={{ background: "#ffe0e0", padding: "10px", margin: "10px 0" }}>
               Вы просматриваете старую версию. Редактирование недоступно.
             </div>
           )}
 
-          {/* Кнопка «Редактировать» только для оригинала и последней версии */}
           {isLatestVersion && !article.articleId && (
-            <button onClick={() => navigate(`/edit/${article.id}`)}>Редактировать</button>
+            <button onClick={() => navigate(`/edit/${article.id}`)}>
+              Редактировать
+            </button>
           )}
 
           <button onClick={loadVersions}>Версии</button>
@@ -67,10 +83,12 @@ function ArticleView() {
             <ul>
               {versions.map(v => (
                 <li key={v.id}>
-                  <button onClick={() => {
-                    setArticle(v);
-                    setCurrentVersion(v.version);
-                  }}>
+                  <button
+                    onClick={() => {
+                      setArticle(v);
+                      setCurrentVersion(v.version);
+                    }}
+                  >
                     Версия {v.version}
                   </button>
                 </li>

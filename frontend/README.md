@@ -1,13 +1,24 @@
 # Articles App — Frontend
 
-Фронтенд‑часть приложения для работы со статьями, версиями, файлами и рабочими пространствами.
+Фронтенд‑часть приложения для работы со статьями, версиями, вложениями и аутентификацией.  
+Использует React, React Router и Axios.
 
 ## Технологии
-- **React (CRA / Vite)**
-- **React Router**
-- **Axios** (запросы к API)
-- **React Quill** (редактор текста)
-- **WebSocket** (уведомления)
+- React (CRA)
+- React Router v6
+- Axios
+- React Quill (редактор текста)
+- WebSocket клиент
+- JWT аутентификация
+
+---
+
+# Установка и запуск
+
+```bash
+cd frontend
+npm install
+npm start
 
 ---
 
