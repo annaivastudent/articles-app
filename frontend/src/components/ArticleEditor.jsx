@@ -66,13 +66,14 @@ function ArticleEditor({ mode }) {
           },
         });
       } else {
-        await axios.put(`http://localhost:5000/articles/${id}`, formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      }
+  await axios.put(`http://localhost:5000/articles/${id}/edit`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+}
+
 
       navigate("/");
     } catch (err) {

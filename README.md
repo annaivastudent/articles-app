@@ -31,18 +31,68 @@ npx sequelize-cli db:create
 npx sequelize-cli db:migrate
 npx sequelize-cli db:seed:all
 npm start
+```
 
-
-- Frontend
+## Frontend
+```bash
 cd frontend
 npm install
 npm start
+```
 Приложение откроется в браузере по адресу: http://localhost:3000
 
 ## Запуск миграций
 1. Создать базу данных.
 2. Выполнить:
-   ```bash
-   npx sequelize-cli db:migrate
+```bash
+npx sequelize-cli db:migrate
+```
 3. Для отката:
+```bash
 npx sequelize-cli db:migrate:undo
+```
+
+## Структура проекта
+Articles-App/
+ ├── backend/
+ │   ├── models/
+ │   ├── migrations/
+ │   ├── seeders/
+ │   ├── routes/
+ │   ├── middleware/
+ │   ├── uploads/
+ │   └── server.js
+ │
+ └── frontend/
+     ├── src/
+     │   ├── auth/
+     │   ├── components/
+     │   ├── App.jsx
+     │   └── index.js
+     └── public/
+
+
+## Основные API‑маршруты
+Аутентификация
+```bash
+POST /auth/register
+POST /auth/login
+```
+Пользователи (admin)
+```bash
+GET /users
+PUT /users/:id/role
+```
+Статьи
+```bash
+POST /articles
+GET /articles
+GET /articles/:id
+PUT /articles/:id/edit
+DELETE /articles/:id
+```
+Версии статей
+```bash
+PUT /articles/:id
+GET /articles/:id/versions
+```

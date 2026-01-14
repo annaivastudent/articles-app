@@ -16,7 +16,8 @@ if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR);
 // Настройка хранения файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
+  filename: (req, file, cb) =>
+    cb(null, Date.now() + path.extname(file.originalname)),
 });
 
 const fileFilter = (req, file, cb) => {
@@ -29,20 +30,27 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ storage, fileFilter });
 
+
+// -------------------------
 // Получить все статьи
+// -------------------------
 router.get("/", async (req, res) => {
   try {
     const articles = await Article.findAll({
-      where: { articleId: null },
       order: [["createdAt", "DESC"]],
     });
+
     res.json(articles);
   } catch (err) {
+    console.error("Ошибка при получении списка статей:", err);
     res.status(500).json({ error: "Failed to fetch articles" });
   }
 });
 
+
+// -------------------------
 // Получить статью по ID
+// -------------------------
 router.get("/:id", async (req, res) => {
   try {
     const id = req.params.id;
@@ -64,27 +72,71 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+
+// -------------------------
 // Создать статью
+// -------------------------
 router.post("/", upload.single("attachment"), async (req, res) => {
   try {
     const attachmentPath = req.file ? "/uploads/" + req.file.filename : null;
+
     const article = await Article.create({
       title: req.body.title,
       content: req.body.content,
       attachment: attachmentPath,
       workspaceId: req.body.workspaceId || null,
+      userId: req.user.id,
     });
+
     res.status(201).json(article);
   } catch (err) {
+    console.error("Ошибка при создании статьи:", err);
     res.status(500).json({ error: "Failed to create article" });
   }
 });
 
-//  Создание версии
+
+// -------------------------
+// Редактирование статьи
+// -------------------------
+router.put("/:id/edit", upload.single("attachment"), async (req, res) => {
+  try {
+    const article = await Article.findByPk(req.params.id);
+    if (!article) return res.status(404).json({ error: "Not found" });
+
+    const isOwner = article.userId === req.user.id;
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    const attachmentPath = req.file
+      ? "/uploads/" + req.file.filename
+      : article.attachment;
+
+    await article.update({
+      title: req.body.title,
+      content: req.body.content,
+      attachment: attachmentPath,
+    });
+
+    res.json(article);
+  } catch (err) {
+    console.error("Ошибка при редактировании:", err);
+    res.status(500).json({ error: "Failed to update article" });
+  }
+});
+
+
+// -------------------------
+// Создание версии статьи
+// -------------------------
 router.put("/:id", upload.single("attachment"), async (req, res) => {
   try {
     const original = await Article.findByPk(req.params.id);
-    if (!original) return res.status(404).json({ error: "Original article not found" });
+    if (!original)
+      return res.status(404).json({ error: "Original article not found" });
 
     const latestVersion = await ArticleVersion.max("version", {
       where: { articleId: original.id },
@@ -95,7 +147,9 @@ router.put("/:id", upload.single("attachment"), async (req, res) => {
       version: (latestVersion || 0) + 1,
       title: req.body.title || original.title,
       content: req.body.content || original.content,
-      attachment: req.file ? "/uploads/" + req.file.filename : original.attachment,
+      attachment: req.file
+        ? "/uploads/" + req.file.filename
+        : original.attachment,
     });
 
     res.status(201).json(newVersion);
@@ -105,7 +159,10 @@ router.put("/:id", upload.single("attachment"), async (req, res) => {
   }
 });
 
+
+// -------------------------
 // Получить все версии
+// -------------------------
 router.get("/:id/versions", async (req, res) => {
   try {
     const versions = await ArticleVersion.findAll({
@@ -114,18 +171,31 @@ router.get("/:id/versions", async (req, res) => {
     });
     res.json(versions);
   } catch (err) {
+    console.error("Ошибка при получении версий:", err);
     res.status(500).json({ error: "Failed to fetch versions" });
   }
 });
 
+
+// -------------------------
 // Удалить статью
+// -------------------------
 router.delete("/:id", async (req, res) => {
   try {
     const article = await Article.findByPk(req.params.id);
     if (!article) return res.status(404).json({ error: "Not found" });
+
+    const isOwner = article.userId === req.user.id;
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
     await article.destroy();
     res.json({ success: true });
   } catch (err) {
+    console.error("Ошибка при удалении статьи:", err);
     res.status(500).json({ error: "Failed to delete article" });
   }
 });

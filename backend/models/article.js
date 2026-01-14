@@ -5,6 +5,8 @@ module.exports = (sequelize, DataTypes) => {
     title: DataTypes.STRING,
     content: DataTypes.TEXT,
     attachment: DataTypes.STRING,
+
+    // workspaceId — как у тебя
     workspaceId: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -12,22 +14,36 @@ module.exports = (sequelize, DataTypes) => {
         model: "Workspaces",
         key: "id"
       }
+    },
+
+    // 🔥 ДОБАВЛЯЕМ userId
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "Users",
+        key: "id"
+      }
     }
+  }, {
+    // 🔥 ВКЛЮЧАЕМ createdAt / updatedAt
+    timestamps: true
   });
 
   Article.associate = (models) => {
-    // связь с Workspace
     Article.belongsTo(models.Workspace, {
       foreignKey: "workspaceId"
     });
 
-    // связь с комментариями
+    Article.belongsTo(models.User, {
+      foreignKey: "userId"
+    });
+
     Article.hasMany(models.Comment, {
       foreignKey: "articleId",
       as: "comments"
     });
 
-    // связь с версиями
     Article.hasMany(models.ArticleVersion, {
       foreignKey: "articleId",
       as: "versions"

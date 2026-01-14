@@ -43,3 +43,102 @@ npx sequelize-cli db:seed:all
 2. Редактировать → `PUT /articles/:id` → создаётся новая версия 
 3. Получить список версий → `GET /articles/:id/versions` 
 4. Открыть старую версию → появляется баннер, редактирование недоступно
+
+## Аутентификация (JWT)
+- Используется middleware authMiddleware, которое:
+- проверяет наличие токена
+- валидирует его
+- извлекает пользователя
+- добавляет req.user во все защищённые маршруты
+```bash
+Authorization: Bearer <token>
+```
+
+## Роли пользователей (RBAC)
+В системе есть две роли:
+- user — обычный пользователь
+- admin — администратор
+При регистрации создаётся пользователь с ролью:
+```bash
+role: "user"
+```
+Администратор может менять роли других пользователей.
+
+## User Management (только admin)
+Получить список всех пользователей
+```bash
+GET /users
+Authorization: Bearer <token>
+```
+Изменить роль пользователя
+```bash
+PUT /users/:id/role
+Authorization: Bearer <token>
+Body: { "role": "admin" | "user" }
+```
+Если пользователь не admin → backend возвращает: 403 Forbidden
+
+## Работа со статьями
+Создать статью
+```bash
+POST /articles
+multipart/form-data
+```
+Поля:
+- title
+- content
+- attachment (jpg, png, pdf)
+- workspaceId
+Получить список статей
+```bash
+GET /articles
+```
+Получить статью по ID
+```bash
+GET /articles/:id
+```
+
+## Редактирование статьи (RBAC)
+Редактировать статью могут:
+- её автор
+- администратор
+```bash
+PUT /articles/:id/edit
+```
+Проверка прав:
+```bash
+const isOwner = article.userId === req.user.id;
+const isAdmin = req.user.role === "admin";
+
+if (!isOwner && !isAdmin) {
+  return res.status(403).json({ error: "Forbidden" });
+}
+```
+
+## Версионность статей
+Каждое редактирование создаёт новую версию.
+Создать версию
+```bash
+PUT /articles/:id
+```
+Получить список версий
+```bash
+GET /articles/:id/versions
+```
+
+## Удаление статьи (RBAC)
+Удалять статью могут:
+- автор
+- администратор
+```bash
+DELETE /articles/:id
+```
+## Структура проекта
+backend/
+ ├── models/          # Sequelize модели
+ ├── migrations/      # Миграции
+ ├── seeders/         # Начальные данные
+ ├── routes/          # Маршруты (auth, articles, users)
+ ├── middleware/      # JWT middleware
+ ├── uploads/         # Загруженные файлы
+ └── server.js        # Точка входа
