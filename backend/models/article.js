@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     content: DataTypes.TEXT,
     attachment: DataTypes.STRING,
 
-    // workspaceId — как у тебя
+
     workspaceId: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -16,7 +16,6 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
 
-    // 🔥 ДОБАВЛЯЕМ userId
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -26,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
   }, {
-    // 🔥 ВКЛЮЧАЕМ createdAt / updatedAt
+
     timestamps: true
   });
 
