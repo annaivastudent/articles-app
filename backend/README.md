@@ -133,12 +133,3 @@ GET /articles/:id/versions
 ```bash
 DELETE /articles/:id
 ```
-## Структура проекта
-backend/
- ├── models/          # Sequelize модели
- ├── migrations/      # Миграции
- ├── seeders/         # Начальные данные
- ├── routes/          # Маршруты (auth, articles, users)
- ├── middleware/      # JWT middleware
- ├── uploads/         # Загруженные файлы
- └── server.js        # Точка входа

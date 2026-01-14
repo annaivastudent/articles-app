@@ -52,26 +52,6 @@ npx sequelize-cli db:migrate
 npx sequelize-cli db:migrate:undo
 ```
 
-## Структура проекта
-Articles-App/
- ├── backend/
- │   ├── models/
- │   ├── migrations/
- │   ├── seeders/
- │   ├── routes/
- │   ├── middleware/
- │   ├── uploads/
- │   └── server.js
- │
- └── frontend/
-     ├── src/
-     │   ├── auth/
-     │   ├── components/
-     │   ├── App.jsx
-     │   └── index.js
-     └── public/
-
-
 ## Основные API‑маршруты
 Аутентификация
 ```bash
