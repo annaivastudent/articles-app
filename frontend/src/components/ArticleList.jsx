@@ -4,13 +4,14 @@ import axios from "axios";
 
 function ArticleList() {
   const [articles, setArticles] = useState([]);
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/articles", {
+      .get(`http://localhost:5000/articles?search=${encodeURIComponent(search)}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(res => setArticles(res.data))
@@ -20,7 +21,7 @@ function ArticleList() {
           navigate("/login");
         }
       });
-  }, [navigate, token]);
+  }, [navigate, token, search]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this article?")) return;
@@ -46,8 +47,17 @@ function ArticleList() {
       <a href="/logout" style={{ float: "right" }}>Logout</a>
       <Link to="/create"><button>Create New Article</button></Link>
 
+      {/* Поле поиска */}
+      <input
+        type="text"
+        placeholder="Search articles..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ margin: "10px 0", padding: "8px", width: "100%" }}
+      />
+
       {articles.length === 0 ? (
-        <p>No articles yet.</p>
+        <p>No articles found.</p>
       ) : (
         <ul>
           {articles.map(a => (

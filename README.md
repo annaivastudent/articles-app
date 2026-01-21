@@ -76,3 +76,9 @@ DELETE /articles/:id
 PUT /articles/:id
 GET /articles/:id/versions
 ```
+## Приложение поддерживает поиск статей по названию и содержимому.
+Поиск работает на уровне backend и полностью интегрирован во frontend.
+- Backend (Sequelize)
+Поиск реализован с помощью Op.iLike
+- Frontend (React)
+Поле поиска обновляет список статей при каждом вводе

@@ -5,6 +5,7 @@ const db = require("../models");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const { Op } = require("sequelize");
 
 const Article = db.Article;
 const ArticleVersion = db.ArticleVersion;
@@ -35,17 +36,26 @@ const upload = multer({ storage, fileFilter });
 // Получить все статьи
 // -------------------------
 router.get("/", async (req, res) => {
-  try {
-    const articles = await Article.findAll({
-      order: [["createdAt", "DESC"]],
-    });
+  const { search } = req.query;
 
-    res.json(articles);
-  } catch (err) {
-    console.error("Ошибка при получении списка статей:", err);
-    res.status(500).json({ error: "Failed to fetch articles" });
+  const where = {};
+
+  if (search) {
+    where[Op.or] = [
+      { title: { [Op.iLike]: `%${search}%` } },
+      { content: { [Op.iLike]: `%${search}%` } }
+    ];
   }
+
+  const articles = await Article.findAll({
+    where,
+    attributes: ["id", "title", "createdAt"],
+    order: [["createdAt", "DESC"]]
+  });
+
+  res.json(articles);
 });
+
 
 
 // -------------------------
