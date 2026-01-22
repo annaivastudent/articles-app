@@ -79,6 +79,8 @@ function ArticleView() {
 
           <button onClick={loadVersions}>Версии</button>
 
+          <button onClick={() => { window.location.href = `http://localhost:5000/articles/${id}/export`; }} > Export as PDF </button>
+
           {versions.length > 0 ? (
             <ul>
               {versions.map(v => (

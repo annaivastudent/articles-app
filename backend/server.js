@@ -25,15 +25,16 @@ app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 
 // Защищённые маршруты
-app.use("/articles", authMiddleware, articleRoutes);
+app.use("/articles", articleRoutes);
 app.use("/workspaces", authMiddleware, workspaceRoutes);
 
 db.sequelize.authenticate()
-  .then(() => console.log("✅ Database connected"))
+  .then(() => console.log("Database connected"))
   .catch(err => console.error("DB error:", err));
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
 
 require("./ws");

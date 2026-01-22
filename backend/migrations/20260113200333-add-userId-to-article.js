@@ -2,7 +2,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.addColumn("Articles", "userId", {
       type: Sequelize.INTEGER,
-      allowNull: true, // разрешаем null, чтобы не падало на старых данных
+      allowNull: true,
       references: {
         model: "Users",
         key: "id"

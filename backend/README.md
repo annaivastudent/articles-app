@@ -141,3 +141,8 @@ DELETE /articles/:id
 GET /articles?search=текст
 ```
 ## В маршруте GET /articles используется Sequelize и оператор Op.iLike
+
+## Экспорт PDF
+PDF генерируется с помощью PDFKit.
+Поддерживается кириллица благодаря подключению шрифта Roboto-Regular.ttf.
+HTML-теги очищаются, сущности декодируются.
